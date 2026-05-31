@@ -1,32 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_icons/line_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'pages/home.dart';
+import 'pages/pdf_tools.dart';
+import 'pages/settings.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isDarkMode = false;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'DocuMate',
+
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+
       theme: ThemeData(
         useMaterial3: true,
-        primaryColor: Colors.grey[800],
+        colorSchemeSeed: Colors.deepPurple,
+        brightness: Brightness.light,
       ),
-      home: const Example(),
+
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.deepPurple,
+        brightness: Brightness.dark,
+      ),
+
+      home: Example(
+        isDarkMode: isDarkMode,
+        onDarkModeChanged: (value) {
+          setState(() {
+            isDarkMode = value;
+          });
+        },
+      ),
     );
   }
 }
 
 class Example extends StatefulWidget {
-  const Example({super.key});
+  final bool isDarkMode;
+  final ValueChanged<bool> onDarkModeChanged;
+
+  const Example({
+    super.key,
+    required this.isDarkMode,
+    required this.onDarkModeChanged,
+  });
 
   @override
   State<Example> createState() => _ExampleState();
@@ -35,35 +70,31 @@ class Example extends StatefulWidget {
 class _ExampleState extends State<Example> {
   int _selectedIndex = 0;
 
-  static const TextStyle optionStyle = TextStyle(
-    fontSize: 30,
-    fontWeight: FontWeight.w600,
-  );
-
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomePage(),
-    Text('PDF Tools', style: optionStyle),
-    Text('Files', style: optionStyle),
-    Text('Settings', style: optionStyle),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      const HomePage(),
+      const PdfToolsPage(),
+      const Center(child: Text("Files")),
+      SettingsPage(
+        isDarkMode: widget.isDarkMode,
+        onDarkModeChanged: widget.onDarkModeChanged,
+      ),
+    ];
+
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-
       appBar: AppBar(
-        elevation: 20,
-        title: const Text('DocuMate'),
+        title: const Text("DocuMate"),
+        centerTitle: true,
       ),
 
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
+      body: pages[_selectedIndex],
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           boxShadow: [
             BoxShadow(
               blurRadius: 20,
@@ -73,42 +104,23 @@ class _ExampleState extends State<Example> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 15.0,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
             child: GNav(
-              rippleColor: Colors.grey[300]!,
-              hoverColor: Colors.grey[100]!,
               gap: 4,
-              activeColor: Colors.black,
               iconSize: 22,
               textStyle: const TextStyle(fontSize: 12),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               duration: const Duration(milliseconds: 400),
-              tabBackgroundColor: Colors.grey[100]!,
-              color: Colors.black,
+
+              color: colorScheme.onSurface,
+              activeColor: colorScheme.onSecondaryContainer,
+              tabBackgroundColor: colorScheme.secondaryContainer,
 
               tabs: const [
-                GButton(
-                  icon: LineIcons.home,
-                  text: 'Home',
-                ),
-                GButton(
-                  icon: Icons.picture_as_pdf,
-                  text: 'PDF',
-                ),
-                GButton(
-                  icon: LineIcons.folderOpen,
-                  text: 'Files',
-                ),
-                GButton(
-                  icon: LineIcons.cog,
-                  text: 'Settings',
-                ),
+                GButton(icon: LineIcons.home, text: 'Home'),
+                GButton(icon: Icons.picture_as_pdf, text: 'PDF'),
+                GButton(icon: LineIcons.folderOpen, text: 'Files'),
+                GButton(icon: LineIcons.cog, text: 'Settings'),
               ],
 
               selectedIndex: _selectedIndex,
