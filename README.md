@@ -6,7 +6,7 @@ more works needs to be done
 
 will see yaa (flowers,flowers,skyrockets)
 
-# 🚧 Pending Work
+#  Pending Work
 
 ## Core PDF Features
 - [ ] Reorder PDF pages
